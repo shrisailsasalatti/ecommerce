@@ -42,6 +42,10 @@ application {
     mainClassName = 'com.merin.newboot.NewBootApplication'
 }
 
+bootJar {
+    mainClassName = 'com.merin.newboot.NewBootApplication'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
