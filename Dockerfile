@@ -1,31 +1,41 @@
-# Build Stage
-FROM openjdk:17-jdk-alpine as builder
+# Use the official OpenJDK 17 image as the base image
+FROM openjdk:17-jdk-alpine
 
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy only the necessary files for running the Gradle build
+# Copy the Gradle files
 COPY build.gradle settings.gradle gradlew /app/
 COPY gradle /app/gradle
 
-# Change permissions to make the Gradle wrapper script executable
+# Give execute permission to gradlew
 RUN chmod +x ./gradlew
 
-# Run the Gradle wrapper to download and cache the Gradle distribution
-RUN ./gradlew build --no-daemon
+# Set the Gradle version
+ENV GRADLE_VERSION=8.5
+
+# Download and install Gradle
+RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp && \
+    unzip -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip && \
+    ln -s /opt/gradle/gradle-${GRADLE_VERSION} /opt/gradle/latest
+
+ENV GRADLE_HOME=/opt/gradle/latest
+ENV PATH=$PATH:$GRADLE_HOME/bin
+
+# Print the current directory and list its content
+RUN pwd && ls -al
+
+# Print the content of the gradlew file
+RUN cat ./gradlew
+
+# Run the Gradle build with additional debugging
+RUN ./gradlew build --no-daemon --stacktrace --info
 
 # Copy the rest of the project
-COPY . .
+COPY . /app/
 
-# Final Stage
-FROM openjdk:17-jdk-alpine
-
-WORKDIR /app
-
-# Copy the generated JAR file from the build stage
-COPY --from=builder /app/build/libs/*.jar app.jar
-
-# Expose the port your Spring Boot app will run on (default is 8080)
+# Expose the port that your application will run on
 EXPOSE 8080
 
-# Entrypoint command to run the Spring Boot application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Define the command to run your application
+CMD ["./gradlew", "bootRun"]
