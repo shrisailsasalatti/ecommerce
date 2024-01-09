@@ -7,6 +7,9 @@ WORKDIR /app
 COPY build.gradle settings.gradle gradlew /app/
 COPY gradle /app/gradle
 
+# Change permissions to make the Gradle wrapper script executable
+RUN chmod +x ./gradlew
+
 # Run the Gradle wrapper to download and cache the Gradle distribution
 RUN ./gradlew build --no-daemon
 
