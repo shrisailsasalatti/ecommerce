@@ -2,8 +2,8 @@ FROM openjdk:17-jdk-alpine  # Base image for Java
 
 WORKDIR /app  # Set working directory
 
-COPY target/gradle-wrapper.jar /app/app.jar  # Copy JAR file
+RUN ./gradlew build  # Build the application
+
+COPY target/<your-app-jar-name>.jar /app/app.jar  # Copy the built JAR file
 
 ENTRYPOINT ["java", "-jar", "app.jar"]  # Start the application
-
-RUN ./gradlew build
